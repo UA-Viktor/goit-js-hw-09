@@ -20,7 +20,8 @@ img {
 
 .timer {
   display: flex;
-  gap: 10px;
+  gap: 15px;
+  font-size: 20px;
 }
 
 .field {
@@ -31,7 +32,7 @@ img {
 }
 
 .value {
-  font-size: 50px;
+  font-size: 60px;
   font-family: 'Big Shoulders Display', cursive;
   font-weight: bold;
 }
