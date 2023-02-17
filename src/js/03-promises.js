@@ -1,43 +1,74 @@
 import Notiflix from 'notiflix';
 Notiflix.Notify.init({ width: '350px', useIcon: false });
 
+const KEY = 'first-step-amount';
+
+const data = {};
 
 const refs = {
+  form:        document.querySelector('form'),
   delayFirst:  document.querySelector('input[name=delay]'),
   delayStep:   document.querySelector('input[name=step]'),
   delayAmount: document.querySelector('input[name=amount]'),
-  createBtn:   document.querySelector('button'),
 }
 
-refs.delayFirst.addEventListener('input', delayFirstUpdate);
-refs.delayStep.addEventListener('input', delayStepUpdate);
-refs.delayAmount.addEventListener('input', delayAmountUpdate);
-refs.createBtn.addEventListener('click', onStart);
+refs.form.addEventListener('submit', onFormSubmit);
+refs.form.addEventListener('input', onInput);
 
-function delayFirstUpdate(e) {
-  const delayFirstData = e.target.value;
-  console.log(delayFirstData);
+getDatalocalStorage();
+
+function onFormSubmit(e) {
+  e.preventDefault();
+  onStart();
+  e.target.reset();
+  localStorage.removeItem(KEY);
 }
 
-function delayStepUpdate(e) {
-  const delayStepData = e.target.value;
-  console.log(delayStepData);
+function onInput(e) {
+  data[e.target.name] = e.target.value;
+  localStorage.setItem(KEY, JSON.stringify(data));
 }
 
-function delayAmountUpdate(e) {
-  const delayAmountData = e.target.value;
-  console.log(delayAmountData);
-}
+function getDatalocalStorage() {
+    if (!localStorage.getItem(KEY)) {
+        return;
+    };
+
+    try {
+      const savedData = JSON.parse(localStorage.getItem(KEY));
+      refs.delayFirst.value = savedData.delay;
+      refs.delayStep.value = savedData.step;
+      refs.delayAmount.value = savedData.amount;
+    } catch (error) {
+      Notiflix.Notify.failure(`❌ Не получилось получить данные`);
+    };
+};
+
 
 function onStart() {
-  
 
-  
-}
+  const dataLocal = JSON.parse(localStorage.getItem(KEY));
+  let delay    = Number(dataLocal.delay);
+  const step   = Number(dataLocal.step);
+  const amount = Number(dataLocal.amount);
 
+  for (let position = 1; position <= amount; position++) {
 
+      createPromise(position, delay)
+        .then(onSuccess)
+        .catch(onError);
+    
+    delay += step;
+  }
+};
 
+function onSuccess({ position, delay }){
+  Notiflix.Notify.success(`✅ Fulfilled promise ${position} in ${delay} ms`);
+};
 
+function onError({ position, delay }) {
+  Notiflix.Notify.failure(`❌ Rejected promise ${position} in ${delay} ms`);
+};
 
 function createPromise(position, delay) {
   return new Promise((resolve, reject) => {
@@ -45,26 +76,11 @@ function createPromise(position, delay) {
     
     setTimeout(() => {
       if (shouldResolve) {
-        resolve("Success! Value passed to resolve function");
+        resolve({ position, delay });
       } else {
-        reject("Error! Error passed to reject function");
+        reject({ position, delay });
       }
     }, delay);
+    
   })
 };
-
-createPromise(2, 1500)
-  .then(({ position, delay }) => {
-    Notiflix.Notify.success(`✅ Fulfilled promise ${position} in ${delay} ms`);
-  })
-  .catch(({ position, delay }) => {
-    Notiflix.Notify.failure(`❌ Rejected promise ${position} in ${delay} ms`);
-  }); 
-
-  createPromise(4, 3500)
-  .then(({ position, delay }) => {
-    Notiflix.Notify.success(`✅ Fulfilled promise ${position} in ${delay} ms`);
-  })
-  .catch(({ position, delay }) => {
-    Notiflix.Notify.failure(`❌ Rejected promise ${position} in ${delay} ms`);
-  }); 
